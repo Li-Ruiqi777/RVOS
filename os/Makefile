@@ -12,6 +12,7 @@ SRCS_ASM = \
 
 SRCS_C = \
 	kernel.c \
+	uart.c \
 
 MKDIR = mkdir -p
 RM = rm -rf
