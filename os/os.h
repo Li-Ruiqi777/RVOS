@@ -10,6 +10,7 @@
 /* uart */
 extern int uart_putc(char ch);
 extern void uart_puts(char *s);
+void uart_echo();
 
 /* printf */
 extern int  printf(const char* s, ...);

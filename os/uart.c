@@ -122,3 +122,22 @@ void uart_puts(char *s)
 		uart_putc(*s++);
 	}
 }
+
+char uart_getc()
+{
+	while ((uart_read_reg(LSR) & LSR_RX_READY) == 0);
+	return uart_read_reg(RHR);
+}
+
+void uart_echo()
+{
+	char ch;
+	while (1) {
+		ch = uart_getc();
+		if (ch == '\r') {
+			uart_putc('\n');
+		} else {
+			uart_putc(ch);
+		}
+	}
+}

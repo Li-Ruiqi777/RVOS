@@ -12,6 +12,8 @@ void start_kernel(void)
 
 	page_init();
 	page_test();
+
+	uart_echo();
 	while (1)
 	{
 	};

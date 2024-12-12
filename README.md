@@ -9,7 +9,9 @@
 - os：RTOS的源码目录
 - docs：个人笔记
 
-
+## features
+- 虽然qemu的risc-v virt板子支持8核,但RVOS只用到了1个核,其他7个核被挂起(start.S实现)
+- 内存管理：没实现page_table，虚拟内存之类的。对物理内存的heap区实现page的管理(分配和释放)
 
 ## 参考链接
 
