@@ -5,6 +5,7 @@
 
 	.global	_start
 
+# 下面的代码放在.text段中,因为.text段是默认段,所以不用加.section指令
 	.text
 _start:
 	# park harts with id != 0

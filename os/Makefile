@@ -4,15 +4,17 @@ ifeq (${SYSCALL}, y)
 DEFS += -DCONFIG_SYSCALL
 endif
 
-
-USE_LINKER_SCRIPT = false
+USE_LINKER_SCRIPT = true
 
 SRCS_ASM = \
 	start.S \
+	mem.S \
 
 SRCS_C = \
 	kernel.c \
 	uart.c \
+	page.c \
+	printf.c \
 
 MKDIR = mkdir -p
 RM = rm -rf
@@ -27,6 +29,8 @@ OBJS = ${OBJS_ASM} ${OBJS_C}
 ELF = ${OUTPUT_PATH}/os.elf
 BIN = ${OUTPUT_PATH}/os.bin
 
+# 是否使用用户自定义连接脚本
+# gcc -T :指定链接脚本
 USE_LINKER_SCRIPT ?= true
 ifeq (${USE_LINKER_SCRIPT}, true)
 LDFLAGS = -T ${OUTPUT_PATH}/os.ld.generated
@@ -42,11 +46,10 @@ ${OUTPUT_PATH}:
 
 # start.o must be the first in dependency!
 #
-# For USE_LINKER_SCRIPT == true, before do link, run preprocessor manually for
-# linker script.
-# -E specifies GCC to only run preprocessor
-# -P prevents preprocessor from generating linemarkers (#line directives)
-# -x c tells GCC to treat your linker script as C source file
+# 如果 USE_LINKER_SCRIPT == true, 为链接脚本进行预处理，生成 os.ld.generated 文件
+# -E : GCC仅进行预处理
+# -P : 防止预处理生成 linemarkers (#line directives)
+# -x c : 告诉GCC像处理c文件一样处理链接脚本
 ${ELF}: ${OBJS}
 ifeq (${USE_LINKER_SCRIPT}, true)
 	${CC} -E -P -x c ${DEFS} ${CFLAGS} os.ld > ${OUTPUT_PATH}/os.ld.generated
