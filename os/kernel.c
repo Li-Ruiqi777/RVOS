@@ -3,17 +3,24 @@
 // 这些函数只应该在这里被调用一次，所以只声明一次，不包含在文件 os.h 中
 extern void uart_init(void);
 extern void page_init(void);
-extern void page_test(void);
+extern void sched_init(void);
+extern void schedule(void);
+extern void os_main(void);
 
 void start_kernel(void)
 {
 	uart_init();
-	uart_puts("Hello RVOS! \r \n");
+	uart_puts("Hello, RVOS!\n");
 
 	page_init();
-	page_test();
 
-	uart_echo();
+	sched_init();
+
+	os_main();
+
+	schedule();
+
+	uart_puts("Would not go here!\n");
 	while (1)
 	{
 	};
