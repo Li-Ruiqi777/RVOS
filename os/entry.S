@@ -104,6 +104,10 @@
 # a0: 指向下个任务的上下文内存
 .globl switch_to
 .balign 4
+# 常用指令
+# - csrr rd, csr : 从csr寄存器中读取值并写入rd寄存器
+# - csrw csr, rs1 : 将rs1的值写入csr寄存器
+# - mv rd, rs1: move rs1 to rd
 switch_to:
 # mscratch: 保存当前任务的上下文内存指针
 # t6: 临时寄存器, 作为上下文内存的基地址
@@ -135,6 +139,34 @@ switch_to:
 
 	# 返回,此时ra被改变了,所以会返回到下个任务
 	ret
+
+.global trap_vector
+.balign 4
+# 异常处理
+trap_vector:
+	# 1.保存当前任务的上下文
+	csrrw	t6, mscratch, t6	# 读取当前任务上下文内存地址到t6
+	reg_save t6			# 保存当前任务的寄存器(t6以外)到上下文内存中
+
+	# 保存t6寄存器的原始内容(被swap到mscratch中了)到上下文内存中
+	mv	t5, t6					# 以t5作为临时寄存器
+	csrr	t6, mscratch		# 从mscratch读回t6
+	STORE	t6, 30*SIZE_REG(t5)	# 保存t6寄存器的原始内容到上下文内存中
+
+	csrw	mscratch, t5		# 将当前任务的上下文内存地址写回mscratch
+
+	# 2.跳转到.c中的中断处理函数
+	csrr	a0, mepc			# 从mepc寄存器中读取 异常结束时应该返回的地址(由硬件自动设置),作为函数形参1
+	csrr	a1, mcause			# 从mcause寄存器中读取异常原因,作为函数形参2
+	call	trap_handler		# 跳转到C语言的中断处理函数,保存返回地址到ra
+
+	# 3.根据中断处理函数的返回值,决定trap结束时返回地址
+	csrw 	mepc, a0
+
+	# 4.恢复中断前的寄存器并返回
+	csrr    t6, mscratch		# 从mscratch读上下文内存的地址到t6
+	reg_restore t6				# 恢复中断前的寄存器
+	mret						# 根据mepc寄存器中的返回地址返回(跳转)
 
 .end
 

@@ -1,6 +1,7 @@
 #ifndef __OS_H__
 #define __OS_H__
 
+#include "riscv.h"
 #include "types.h"
 #include "platform.h"
 

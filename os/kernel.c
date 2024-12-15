@@ -6,6 +6,7 @@ extern void page_init(void);
 extern void sched_init(void);
 extern void schedule(void);
 extern void os_main(void);
+extern void trap_init();
 
 void start_kernel(void)
 {
@@ -13,6 +14,7 @@ void start_kernel(void)
 	uart_puts("Hello, RVOS!\n");
 
 	page_init();
+	trap_init();
 
 	sched_init();
 

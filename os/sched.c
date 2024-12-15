@@ -17,17 +17,11 @@ struct context ctx_tasks[MAX_TASKS];//每个任务的上下文内存区
  * _current is used to point to the context of current task
  */
 static int _top = 0;
-static int _current = -1;
-
-static void w_mscratch(reg_t x) {
-  asm volatile("csrw mscratch, %0" : : "r"(x));
-}
+static int _current = -1; 
 
 void sched_init() { w_mscratch(0); }
 
-/*
- * implment a simple cycle FIFO schedular
- */
+// 任务轮转调度
 void schedule() {
   if (_top <= 0) {
     panic("Num of task should be greater than zero!");

@@ -18,6 +18,7 @@ SRCS_C = \
 	printf.c \
 	user.c \
 	sched.c \
+	trap.c \
 
 MKDIR = mkdir -p
 RM = rm -rf
