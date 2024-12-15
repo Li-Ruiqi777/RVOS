@@ -7,7 +7,7 @@
  * ref: https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/riscv.h
  */
 
-// 读取tp寄存器的值
+// tp(x4)寄存器指向每个线程的Thread Local Storage(TLS)段的起始地址,每个线程都有独立的TLS用于保存线程私有的数据
 static inline reg_t r_tp()
 {
 	reg_t x;

@@ -19,7 +19,6 @@ void user_task1(void)
 	while (1) {
 		uart_puts("Task 1: Running...\n");
 		task_delay(DELAY);
-		trap_test();
 		task_yield();
 	}
 }

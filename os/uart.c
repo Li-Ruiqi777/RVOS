@@ -108,6 +108,14 @@ void uart_init()
 	 */
 	lcr = 0;
 	uart_write_reg(LCR, lcr | (3 << 0));
+
+	// 使能接收中断
+	uint8_t ier = uart_read_reg(IER);
+	uart_write_reg(IER, ier | (1 << 0));
+
+	// // 使能发送中断
+	// ier = uart_read_reg(IER);
+	// uart_write_reg(IER, ier | (1 << 1));
 }
 
 int uart_putc(char ch)
@@ -140,4 +148,11 @@ void uart_echo()
 			uart_putc(ch);
 		}
 	}
+}
+
+// 处理一个RX中断
+void uart_isr(void)
+{
+	uart_putc((char)uart_getc());
+	uart_putc('\n');
 }

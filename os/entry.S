@@ -142,7 +142,7 @@ switch_to:
 
 .global trap_vector
 .balign 4
-# 异常处理
+# 异常处理,此时hart自动被切换到了Machine模式
 trap_vector:
 	# 1.保存当前任务的上下文
 	csrrw	t6, mscratch, t6	# 读取当前任务上下文内存地址到t6
@@ -166,7 +166,7 @@ trap_vector:
 	# 4.恢复中断前的寄存器并返回
 	csrr    t6, mscratch		# 从mscratch读上下文内存的地址到t6
 	reg_restore t6				# 恢复中断前的寄存器
-	mret						# 根据mepc寄存器中的返回地址返回(跳转)
+	mret						# 1.将CPU的模式切换回trap前的模式 2.根据mepc寄存器中的返回地址返回(跳转)
 
 .end
 

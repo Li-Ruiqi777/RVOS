@@ -19,6 +19,7 @@ SRCS_C = \
 	user.c \
 	sched.c \
 	trap.c \
+	plic.c \
 
 MKDIR = mkdir -p
 RM = rm -rf
