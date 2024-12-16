@@ -20,6 +20,7 @@ SRCS_C = \
 	sched.c \
 	trap.c \
 	plic.c \
+	timer.c \
 
 MKDIR = mkdir -p
 RM = rm -rf

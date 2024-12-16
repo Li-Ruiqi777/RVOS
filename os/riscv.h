@@ -49,7 +49,6 @@ static inline void w_mstatus(reg_t x)
 	asm volatile("csrw mstatus, %0" : : "r" (x));
 }
 
-
 // 写mepc寄存器的值,用于保存 异常结束后 要跳转回的指令地址
 static inline void w_mepc(reg_t x)
 {
