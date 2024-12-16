@@ -121,7 +121,7 @@ switch_to:
 	reg_restore t6			# 从上下文内存恢复新任务的通用寄存器
 
 	# Notice this will enable global interrupt
-	mret					# 进行实际的任务调度
+	mret					# 进行实际的任务调度,将PC设为mepc的值
 
 ; switch_to_old:
 ; # mscratch: 保存当前任务的上下文内存指针
@@ -178,6 +178,7 @@ trap_vector:
 	csrr	a0, mepc			# 从mepc寄存器中读取 异常结束时应该返回的地址(由硬件自动设置),作为函数形参1
 	csrr	a1, mcause			# 从mcause寄存器中读取异常原因,作为函数形参2
 	call	trap_handler		# 跳转到C语言的中断处理函数,保存返回地址到ra
+	#  如果trap是定时器中断,则不会执行下面的代码了
 
 	# 3.根据中断处理函数的返回值,决定trap结束时返回地址
 	csrw 	mepc, a0

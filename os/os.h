@@ -58,7 +58,7 @@ struct context {
 	reg_t t6;
 
 	// save the pc to run in next schedule cycle
-	reg_t pc; // offset: 31 * sizeof(reg_t)
+	reg_t mepc; // offset: 31 * sizeof(reg_t)
 };
 
 extern int  task_create(void (*task)(void));

@@ -24,11 +24,8 @@ void timer_init()
 	 */
 	timer_load(TIMER_INTERVAL);
 
-	/* enable machine-mode timer interrupts. */
+	// 开启machine mode的定时器中断
 	w_mie(r_mie() | MIE_MTIE);
-
-	/* enable machine-mode global interrupts. */
-	w_mstatus(r_mstatus() | MSTATUS_MIE);
 }
 
 void timer_handler() 

@@ -19,7 +19,11 @@ struct context ctx_tasks[MAX_TASKS];//每个任务的上下文内存区
 static int _top = 0;
 static int _current = -1; 
 
-void sched_init() { w_mscratch(0); }
+void sched_init() {
+  w_mscratch(0);
+  // 开启machine mode的软中断
+	w_mie(r_mie() | MIE_MSIE);
+}
 
 // 任务轮转调度
 void schedule() {
@@ -44,7 +48,7 @@ void schedule() {
 int task_create(void (*start_routin)(void)) {
   if (_top < MAX_TASKS) {
     ctx_tasks[_top].sp = (reg_t)&task_stack[_top][STACK_SIZE];
-    ctx_tasks[_top].ra = (reg_t)start_routin;
+    ctx_tasks[_top].mepc = (reg_t)start_routin; // 汇编里的switch_to是mret,所以不用ra而用mepc寄存器
     _top++;
     return 0;
   } else {
@@ -57,13 +61,17 @@ int task_create(void (*start_routin)(void)) {
  * 	task_yield()  causes the calling task to relinquish the CPU and a new
  * 	task gets to run.
  */
-void task_yield() { schedule(); }
+void task_yield() {
+  int id = r_mhartid();
+  
+  // 触发一个软中断
+	*(uint32_t*)CLINT_MSIP(id) = 1;
+}
 
 /*
  * a very rough implementaion, just to consume the cpu
  */
 void task_delay(volatile int count) {
   count *= 50000;
-  while (count--)
-    ;
+  while (count--);
 }

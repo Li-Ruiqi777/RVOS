@@ -3,13 +3,14 @@
 extern void trap_vector(void);
 extern void uart_isr(void);
 extern void timer_handler(void);
+extern void schedule(void);
 
 void external_interrupt_handler()
 {
 	int irq = plic_claim();
 
 	if (irq == UART0_IRQ){
-      		uart_isr();
+      	uart_isr();
 	} else if (irq) {
 		printf("unexpected interrupt irq = %d\n", irq);
 	}
@@ -37,6 +38,9 @@ reg_t trap_handler(reg_t epc, reg_t cause)
 		switch (cause_code) {
 		case 3:
 			uart_puts("software interruption!\n");
+			int id = r_mhartid();
+    		*(uint32_t*)CLINT_MSIP(id) = 0;
+			schedule();
 			break;
 		case 7:
 			uart_puts("timer interruption!\n");
