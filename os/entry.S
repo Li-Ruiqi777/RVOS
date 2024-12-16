@@ -99,46 +99,61 @@
 
 .text
 
+# 常用指令
+# csrr rd, csr : 从csr寄存器中读取值并写入rd寄存器
+# csrw csr, rs1 : 将rs1的值写入csr寄存器
+# mv rd, rs1: move rs1 to rd
+# STORE rd, offset(base): 将rd寄存器的值存入base+offset处的内存
+
+.globl switch_to
+.balign 4
+
 # 首先保存当前任务的寄存器到上下文内存中,接着从下一个任务的上下文内存恢复寄存器,从而切换到下一个任务
 # void switch_to(struct context *next);
 # a0: 指向下个任务的上下文内存
-.globl switch_to
-.balign 4
-# 常用指令
-# - csrr rd, csr : 从csr寄存器中读取值并写入rd寄存器
-# - csrw csr, rs1 : 将rs1的值写入csr寄存器
-# - mv rd, rs1: move rs1 to rd
 switch_to:
-# mscratch: 保存当前任务的上下文内存指针
-# t6: 临时寄存器, 作为上下文内存的基地址
+	csrw	mscratch, a0	# 让 mscratch 指向新任务的上下文内存
+	
+	LOAD	a1, 31*SIZE_REG(a0)
+	csrw	mepc, a1		# 从上下文内存恢复新任务的mepc
+	
+	mv	t6, a0				# 让t6作为上下文内存的基地址
+	reg_restore t6			# 从上下文内存恢复新任务的通用寄存器
 
-	# 1.保存当前任务上下文
-	csrrw	t6, mscratch, t6	# 读取当前任务上下文内存地址到t6
-	beqz	t6, 1f				# 如果第一次调度，t6为0，则跳过当前任务寄存器的保存
-	# Note: the first time switch_to() is called, mscratch is initialized as zero
-	# (in sched_init()), which makes t6 zero,
-	# and that's the special case we have to
-	# handle with t6
+	# Notice this will enable global interrupt
+	mret					# 进行实际的任务调度
 
-	reg_save t6			# 保存当前任务的寄存器(t6以外)到上下文内存中
+; switch_to_old:
+; # mscratch: 保存当前任务的上下文内存指针
+; # t6: 临时寄存器, 作为上下文内存的基地址
 
-	# 保存t6寄存器的原始内容(被swap到mscratch中了)到上下文内存中
-	mv	t5, t6					# 以t5作为临时寄存器
-	csrr	t6, mscratch		# 从mscratch读回t6
-	STORE	t6, 30*SIZE_REG(t5)	# 保存t6寄存器的原始内容到上下文内存中
+; 	# 1.保存当前任务上下文
+; 	csrrw	t6, mscratch, t6	# 读取当前任务上下文内存地址到t6
+; 	beqz	t6, 1f				# 如果第一次调度，t6为0，则跳过当前任务寄存器的保存
+; 	# Note: the first time switch_to() is called, mscratch is initialized as zero
+; 	# (in sched_init()), which makes t6 zero,
+; 	# and that's the special case we have to
+; 	# handle with t6
 
-	# 2.恢复下个任务上下文
-1:
-	# 将下个任务的上下文内存地址读到mscratch
-	csrw	mscratch, a0
+; 	reg_save t6			# 保存当前任务的寄存器(t6以外)到上下文内存中
 
-	# 将下个任务的上下文内存地址读到mscratch
-	mv	t6, a0
-	# 从下个任务的上下文内存恢复寄存器内容
-	reg_restore t6
+; 	# 保存t6寄存器的原始内容(被swap到mscratch中了)到上下文内存中
+; 	mv	t5, t6					# 以t5作为临时寄存器
+; 	csrr	t6, mscratch		# 从mscratch读回t6
+; 	STORE	t6, 30*SIZE_REG(t5)	# 保存t6寄存器的原始内容到上下文内存中
 
-	# 返回,此时ra被改变了,所以会返回到下个任务
-	ret
+; 	# 2.恢复下个任务上下文
+; 1:
+; 	# 将下个任务的上下文内存地址读到mscratch
+; 	csrw	mscratch, a0
+
+; 	# 将下个任务的上下文内存地址读到mscratch
+; 	mv	t6, a0
+; 	# 从下个任务的上下文内存恢复寄存器内容
+; 	reg_restore t6
+
+; 	# 返回,此时ra被改变了,所以会返回到下个任务
+; 	ret
 
 .global trap_vector
 .balign 4
@@ -146,13 +161,17 @@ switch_to:
 trap_vector:
 	# 1.保存当前任务的上下文
 	csrrw	t6, mscratch, t6	# 读取当前任务上下文内存地址到t6
-	reg_save t6			# 保存当前任务的寄存器(t6以外)到上下文内存中
+	reg_save t6					# 保存当前任务的寄存器(t6以外)到上下文内存中
 
 	# 保存t6寄存器的原始内容(被swap到mscratch中了)到上下文内存中
 	mv	t5, t6					# 以t5作为临时寄存器
 	csrr	t6, mscratch		# 从mscratch读回t6
 	STORE	t6, 30*SIZE_REG(t5)	# 保存t6寄存器的原始内容到上下文内存中
 
+	# 保存mepc寄存器到上下文内存中
+	csrr	a0, mepc			# 用a0暂存mepc寄存器的值
+	STORE	a0, 31*SIZE_REG(t5)
+	
 	csrw	mscratch, t5		# 将当前任务的上下文内存地址写回mscratch
 
 	# 2.跳转到.c中的中断处理函数

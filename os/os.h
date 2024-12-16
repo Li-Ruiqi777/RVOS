@@ -22,6 +22,7 @@ void *page_alloc(int npages);
 void page_free(void *p);
 
 /* task management */
+// 32个通用寄存器
 struct context {
 	/* ignore x0 */
 	reg_t ra;
@@ -55,6 +56,9 @@ struct context {
 	reg_t t4;
 	reg_t t5;
 	reg_t t6;
+
+	// save the pc to run in next schedule cycle
+	reg_t pc; // offset: 31 * sizeof(reg_t)
 };
 
 extern int  task_create(void (*task)(void));

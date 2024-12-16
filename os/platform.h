@@ -1,6 +1,6 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
-// 定义平台(Soc)相关宏定义
+// 定义了SoC(platform)的一些信息、寄存器之类的
 
 /*
  * QEMU RISC-V Virt machine with 16550a UART and VirtIO MMIO

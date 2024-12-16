@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+// 定义了和riscv ISA的CPU内核相关的一些常量和函数
+
 /*
  * ref: https://github.com/mit-pdos/xv6-riscv/blob/riscv/kernel/riscv.h
  */
