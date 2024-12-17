@@ -1,8 +1,6 @@
 include ./common.mk
 
-ifeq (${SYSCALL}, y)
 DEFS += -DCONFIG_SYSCALL
-endif
 
 USE_LINKER_SCRIPT = true
 
@@ -10,6 +8,7 @@ SRCS_ASM = \
 	start.S \
 	mem.S \
 	entry.S \
+	usys.S \
 
 SRCS_C = \
 	kernel.c \
@@ -22,6 +21,7 @@ SRCS_C = \
 	plic.c \
 	timer.c \
 	lock.c \
+	syscall.c \
 
 MKDIR = mkdir -p
 RM = rm -rf

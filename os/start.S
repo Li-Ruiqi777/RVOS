@@ -31,14 +31,23 @@ _start:
 	
 	add	sp, sp, t0					# move the current hart stack pointer
 									# to its place in the stack space
+#ifdef CONFIG_SYSCALL
+	li      t0, 0xffffffff
+	csrw    pmpaddr0, t0
+	li      t0, 0xf
+	csrw    pmpcfg0, t0
 
+	li		t0, 3 << 11				# mstatus.MPP为0，mret后特权等级变为用户态
+	csrc	mstatus, t0
+#else
 	# At the end of start_kernel, schedule() will call MRET to switch
 	# to the first task, so we parepare the mstatus here.
 	# 在mret中,会将特权等级设为mstatus.MPP, 会将mstatus.MIE设置为mstatus.MPIE
 	# 设置 mstatus.MPP为3, 使得我们在MRET后仍处于Machine mode, 之前之所以崩溃就是没设MPP,导致mret后特权等级发生改变
 	# 设置 mstatus.MPIE为1, 使得在MRET后维持之前的中断使能状态.
-	li	t0, 3 << 11 | 1 << 7
+	li		t0, 3 << 11 | 1 << 7
 	csrs	mstatus, t0
+#endif
 
 	j	start_kernel		# 跳转到C语言的函数中
 

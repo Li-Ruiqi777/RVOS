@@ -4,6 +4,7 @@ extern void trap_vector(void);
 extern void uart_isr(void);
 extern void timer_handler(void);
 extern void schedule(void);
+extern void do_syscall(struct context *cxt);
 
 void external_interrupt_handler()
 {
@@ -28,7 +29,7 @@ void trap_init()
 	w_mtvec((reg_t)trap_vector);
 }
 
-reg_t trap_handler(reg_t epc, reg_t cause)
+reg_t trap_handler(reg_t epc, reg_t cause, struct context *cxt)
 {
 	reg_t return_pc = epc;
 	reg_t cause_code = cause & MCAUSE_MASK_ECODE;
@@ -57,8 +58,15 @@ reg_t trap_handler(reg_t epc, reg_t cause)
 	} else {
 		// 异常:同步trap
 		printf("Sync exceptions! Code = %ld\n", cause_code);
-		panic("OOPS! What can I do!");
-		// return_pc += 4;
+		switch (cause_code) {
+			case 8:
+				uart_puts("System call from U-mode!\n");
+				do_syscall(cxt);
+				return_pc += 4;
+				break;
+			default:
+				panic("OOPS! What can I do!");
+		}
 	}
 
 	return return_pc;

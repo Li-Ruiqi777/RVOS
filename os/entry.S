@@ -175,8 +175,10 @@ trap_vector:
 	csrw	mscratch, t5		# 将当前任务的上下文内存地址写回mscratch
 
 	# 2.跳转到.c中的中断处理函数
+	# 给trap_handler准备形参
 	csrr	a0, mepc			# 从mepc寄存器中读取 异常结束时应该返回的地址(由硬件自动设置),作为函数形参1
 	csrr	a1, mcause			# 从mcause寄存器中读取异常原因,作为函数形参2
+	csrr	a2, mscratch		# 从mscratch寄存器中读取上下文内存地址,作为函数形参3
 	call	trap_handler		# 跳转到C语言的中断处理函数,保存返回地址到ra
 	#  如果trap是定时器中断,则不会执行下面的代码了
 

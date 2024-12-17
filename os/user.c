@@ -1,5 +1,7 @@
 #include "os.h"
 
+#include "user_api.h"
+
 #define DELAY 5000
 extern void trap_test();
 
@@ -25,34 +27,42 @@ void timer_func(void *arg)
 void user_task0(void)
 {
 	uart_puts("Task 0: Created!\n");
-	task_yield();
-	uart_puts("Task 0: 孩子们我回来了!\n");
-	timer_create(timer_func, &person, 1);
-	timer_create(timer_func, &person, 2);
-	while (1) {
-		spin_lock();
-		for(int i=0;i<5;++i){
-			uart_puts("Task 0: Running...\n");
-			task_delay(DELAY);
-		}
-		uart_puts("Task 0: End!\n");
-		spin_unlock();
+
+	unsigned int hid = -1;
+
+	/*
+	 * if syscall is supported, this will trigger exception, 
+	 * code = 2 (Illegal instruction)
+	 */
+	//hid = r_mhartid();
+	//printf("hart id is %d\n", hid);
+
+#ifdef CONFIG_SYSCALL
+	int ret = -1;
+	ret = gethid(&hid);
+	//ret = gethid(NULL);
+	if (!ret) {
+		printf("system call returned!, hart id is %d\n", hid);
+	} else {
+		printf("gethid() failed, return: %d\n", ret);
+	}
+#endif
+
+	while (1){
+		uart_puts("Task 0: Running... \n");
+		task_delay(DELAY);
 	}
 }
 
 void user_task1(void)
 {
 	uart_puts("Task 1: Created!\n");
-	timer_create(timer_func, &person, 3);
-	while (1) {
-		spin_lock();
-		for(int i=0;i<5;++i){
-			uart_puts("Task 1: Running...\n");
-			task_delay(DELAY);
-		}
-		uart_puts("Task 1: End!\n");
-		spin_unlock();
+
+	while (1){
+		uart_puts("Task 1: Running... \n");
+		task_delay(DELAY);
 	}
+
 }
 
 /* NOTICE: DON'T LOOP INFINITELY IN main() */
