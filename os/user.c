@@ -7,10 +7,15 @@ void user_task0(void)
 {
 	uart_puts("Task 0: Created!\n");
 	task_yield();
-	// uart_puts("Task 0: 孩子们我回来了!\n");
+	uart_puts("Task 0: 孩子们我回来了!\n");
 	while (1) {
-		uart_puts("Task 0: Running...\n");
-		task_delay(DELAY);
+		spin_lock();
+		for(int i=0;i<5;++i){
+			uart_puts("Task 0: Running...\n");
+			task_delay(DELAY);
+		}
+		uart_puts("Task 0: End!\n");
+		spin_unlock();
 	}
 }
 
@@ -18,8 +23,13 @@ void user_task1(void)
 {
 	uart_puts("Task 1: Created!\n");
 	while (1) {
-		uart_puts("Task 1: Running...\n");
-		task_delay(DELAY);
+		spin_lock();
+		for(int i=0;i<5;++i){
+			uart_puts("Task 1: Running...\n");
+			task_delay(DELAY);
+		}
+		uart_puts("Task 1: End!\n");
+		spin_unlock();
 	}
 }
 
